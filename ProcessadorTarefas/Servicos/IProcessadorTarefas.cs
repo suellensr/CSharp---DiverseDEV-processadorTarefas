@@ -2,9 +2,7 @@
 {
     public interface IProcessadorTarefas<T,Y>
     {
-        Task ProcessarTarefasAsync(int tarefasEmParalelo);
-        Task IniciarTarefaAsync(T entity);
-        Task IniciarSubtarefasAsync(Y entity);
+        Task Iniciar();
         Task CancelarTarefa(int idTarefa);
         Task Encerrar();
     }

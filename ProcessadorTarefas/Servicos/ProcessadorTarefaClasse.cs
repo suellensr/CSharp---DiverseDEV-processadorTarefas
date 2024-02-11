@@ -1,6 +1,6 @@
-﻿using ProcessadorTarefas.Entidades;
+﻿using Microsoft.Extensions.Configuration;
+using ProcessadorTarefas.Entidades;
 using ProcessadorTarefas.Repositorios;
-using System.Threading.Tasks;
 
 namespace ProcessadorTarefas.Servicos
 {
@@ -8,10 +8,12 @@ namespace ProcessadorTarefas.Servicos
     {
 
         private IRepository<Tarefa> _repositorio;
+        private IConfiguration _configuracao;
 
-        public ProcessadorTarefasClasse(IRepository<Tarefa> repositorio)
+        public ProcessadorTarefasClasse(IRepository<Tarefa> repositorio, IConfiguration configuracao)
         {
             _repositorio = repositorio;
+            _configuracao = configuracao;
         }
 
         public Task CancelarTarefa(int idTarefa)
@@ -23,15 +25,45 @@ namespace ProcessadorTarefas.Servicos
             throw new NotImplementedException();
         }
 
+        public async Task Iniciar()
+        {
+            // Aqui você acessa o valor da configuração "quantidadeTarefasEmParalelo"
+            var quantidadeTaskParalelo = int.Parse(_configuracao["quantidadeTarefasEmParalelo"]);
+            
+            if(quantidadeTaskParalelo > 0)
+                await ProcessarTarefasAsync(quantidadeTaskParalelo);
+
+        }
+
+        public Queue<Tarefa> PreencherTarefasAgendadas()
+        {
+            int quatidadeTarefasAgendadas = int.Parse(_configuracao["quantidadeTarefasAgendadas"]!);
+            var tarefasAgendadas = new Queue<Tarefa>();
+
+            while(tarefasAgendadas.Count < quatidadeTarefasAgendadas)
+            {
+                foreach(Tarefa tarefa in _repositorio.GetAll())
+                {
+                    if(tarefa.Estado == EstadoTarefa.EmPausa)
+                    {
+                        tarefasAgendadas.Enqueue(tarefa);
+                    }
+                }
+                foreach (Tarefa tarefa in _repositorio.GetAll())
+                {
+                    if (tarefa.Estado == EstadoTarefa.Criada)
+                    {
+                        tarefasAgendadas.Enqueue(tarefa);
+                    }
+                }
+            }
+
+            return tarefasAgendadas;
+        }
+
         public async Task ProcessarTarefasAsync(int tarefasEmParalelo) //recebe do arquivo config
         {
-            //Preciso adicionar a lógica para agendar tarefas
-            //preciso adicionar a lógica para colocar as emPausa antes do resto
-            
-            
-            
-            
-            Queue<Tarefa> filaTarefa = new Queue<Tarefa>(_repositorio.GetAll().Where(tarefa => tarefa.Estado == EstadoTarefa.Agendada));
+            Queue<Tarefa> filaTarefa = PreencherTarefasAgendadas();
 
             var tasksEmExecucao = new List<Task>();
 
@@ -77,5 +109,6 @@ namespace ProcessadorTarefas.Servicos
         {
             await Task.Delay(subtarefa.Duracao);
         }
+
     }
 }

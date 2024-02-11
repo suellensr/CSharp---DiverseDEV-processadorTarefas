@@ -20,11 +20,7 @@ namespace ConsoleUI
             var gerenciadorTarefas = serviceProvider.GetService<IGerenciadorTarefas>();
             var configuracao = serviceProvider.GetService<IConfiguration>();
 
-            // Aqui você acessa o valor da configuração "quantidadeTarefasEmParalelo"
-            var quantidadeTaskParalelo = int.Parse(configuracao["quantidadeTarefasEmParalelo"]);
-
-            if (quantidadeTaskParalelo > 0)
-                await processadorTarefas.ProcessarTarefasAsync(quantidadeTaskParalelo);
+           await processadorTarefas.Iniciar();
         }
 
         public static IServiceProvider ServicesConfiguration()
@@ -51,46 +47,7 @@ namespace ConsoleUI
                 })
                 .BuildServiceProvider();
 
-            ////Do prof
-            //IServiceCollection service = new ServiceCollection();
-            //service.AddScoped(_ => configuration);
-            //service.AddScoped<IRepository<Tarefa>, MemoryRepository>();
-            ////service.AddSingleton<IProcessadorTarefas, ProcessadorTarefasClasse>(), 
-            //service.AddScoped<IGerenciadorTarefas, GerenciadorTarefas>(serviceProvider =>
-            //{
-            //    var repository = serviceProvider.GetService<IRepository<Tarefa>>();
-            //    return new GerenciadorTarefas(serviceProvider, repository, configuration);
-            //});
-
             return services;
         }
-
-
-
-
-
-
-
-        //var memoryRepository = new MemoryRepository();
-
-        //    var tarefas = memoryRepository.GetAll();
-        //    Console.WriteLine("Só inicializada");
-        //    foreach (var tarefa in tarefas)
-        //    {
-        //        Console.WriteLine($"Sou a tarefa {tarefa.Id} e tenho {tarefa.SubtarefasPendentes.Count} subtarefas.");
-        //    }
-        //    Console.WriteLine("____________________________________________________");
-
-
-
-
-        //    memoryRepository.Add();
-        //    memoryRepository.Add();
-        //    tarefas = memoryRepository.GetAll();
-        //    Console.WriteLine("Com duas adições");
-        //    foreach (var tarefa in tarefas)
-        //    {
-        //        Console.WriteLine($"Sou a tarefa {tarefa.Id} e tenho {tarefa.SubtarefasPendentes.Count} subtarefas.");
-        //    }
     }
 }
