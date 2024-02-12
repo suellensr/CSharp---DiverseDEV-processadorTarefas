@@ -10,17 +10,24 @@ namespace ConsoleUI
     {
         static async Task Main(string[] args)
         {
+            var visualizacaoTarefas = VisualizacaoTarefas.Nenhuma;
 
             //Receiving Services for DI
             var serviceProvider = ServicesConfiguration();
 
 
             //Instanciando os serviços pela interface
-            var processadorTarefas = serviceProvider.GetService<IProcessadorTarefas<Tarefa, Subtarefa>>();
+            var processadorTarefas = serviceProvider.GetService<IProcessadorTarefas>();
             var gerenciadorTarefas = serviceProvider.GetService<IGerenciadorTarefas>();
             var configuracao = serviceProvider.GetService<IConfiguration>();
 
-           await processadorTarefas.Iniciar();
+            processadorTarefas.Iniciar();
+
+
+
+
+
+
         }
 
         public static IServiceProvider ServicesConfiguration()
@@ -38,11 +45,11 @@ namespace ConsoleUI
                 .AddSingleton<IConfiguration>(configuration)
                 .AddScoped<IRepository<Tarefa>, MemoryRepository>()
                 //.AddScoped<IRepository<Tarefa>>(_ => new SqliteRepository<Tarefa>(connectionString)) //pra usar no futuro
-                .AddSingleton<IProcessadorTarefas<Tarefa, Subtarefa>, ProcessadorTarefasClasse>()
+                .AddSingleton<IProcessadorTarefas, ProcessadorTarefasClasse>()
                 .AddScoped<IGerenciadorTarefas>(provider =>
                 {
                     var repository = provider.GetService<IRepository<Tarefa>>();
-                    var serviceProvider = provider.GetService<IProcessadorTarefas<Tarefa, Subtarefa>>();
+                    var serviceProvider = provider.GetService<IProcessadorTarefas>();
                     return new GerenciadorTarefas(repository, serviceProvider);
                 })
                 .BuildServiceProvider();

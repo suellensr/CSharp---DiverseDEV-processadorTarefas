@@ -4,7 +4,7 @@ using ProcessadorTarefas.Repositorios;
 
 namespace ProcessadorTarefas.Servicos
 {
-    public class ProcessadorTarefasClasse : IProcessadorTarefas<Tarefa,Subtarefa>
+    public class ProcessadorTarefasClasse : IProcessadorTarefas
     {
 
         private IRepository<Tarefa> _repositorio;

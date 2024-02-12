@@ -20,7 +20,7 @@ namespace ProcessadorTarefas.Repositorios
             {
                 if (_tarefas == null)
                 {
-                    _tarefas = GerarListaTarefas(); //Esse número é definido aqui mesmo.
+                    _tarefas = GerarListaTarefas();
                 }
                 return _tarefas;
             }
@@ -84,25 +84,7 @@ namespace ProcessadorTarefas.Repositorios
                 var tarefa = Tarefa.GerarTarefa();
                 tarefas.Add(tarefa);
             }
-
             return tarefas;
         }
-
-        //SE NÂO DER CERTO VOLTA PRA CA
-        //var tarefa = new Tarefa();
-        //Random randon = new Random();
-
-        ////CRIA AS SUBTAREFAS
-        //for (int contadorSubtarefas = 0; contadorSubtarefas < randon.Next(2, 10); contadorSubtarefas++) //trocar pra 10, 100
-        //{
-        //    var subtarefa = new Subtarefa
-        //    {
-        //        Duracao = TimeSpan.FromSeconds(randon.Next(3, 10)) //trocar pra 3, 60
-        //    };
-
-        //    tarefa.SubtarefasPendentes.Add(subtarefa);
-        //}
-
-        //return tarefa;
     }
 }

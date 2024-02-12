@@ -21,5 +21,13 @@ namespace ConsoleUI
             Console.WriteLine("+      5 - Sair                            +");
             Console.WriteLine("--------------------------------------------");
         }
+
+        public static void MostrarMenuListagens()
+        {
+            
+        
+        
+        }
+
     }
 }

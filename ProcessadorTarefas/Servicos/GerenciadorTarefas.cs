@@ -12,10 +12,10 @@ namespace ProcessadorTarefas.Servicos
     public class GerenciadorTarefas : IGerenciadorTarefas
     {
         private readonly IRepository<Tarefa> _repositorio;
-        private readonly IProcessadorTarefas<Tarefa, Subtarefa> _processadorTarefas;
+        private readonly IProcessadorTarefas _processadorTarefas;
 
         //Construtor recebendo as DIs
-        public GerenciadorTarefas(IRepository<Tarefa> repositorio, IProcessadorTarefas<Tarefa, Subtarefa> processadorTarefas)
+        public GerenciadorTarefas(IRepository<Tarefa> repositorio, IProcessadorTarefas processadorTarefas)
         {
             _repositorio = repositorio;
             _processadorTarefas = processadorTarefas;
