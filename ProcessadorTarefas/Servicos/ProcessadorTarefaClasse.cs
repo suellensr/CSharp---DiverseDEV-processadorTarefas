@@ -40,11 +40,11 @@ namespace ProcessadorTarefas.Servicos
             int quatidadeTarefasAgendadas = int.Parse(_configuracao["quantidadeTarefasAgendadas"]!);
             var tarefasAgendadas = new Queue<Tarefa>();
 
-            while(tarefasAgendadas.Count < quatidadeTarefasAgendadas)
+            while (tarefasAgendadas.Count < quatidadeTarefasAgendadas)
             {
-                foreach(Tarefa tarefa in _repositorio.GetAll())
+                foreach (Tarefa tarefa in _repositorio.GetAll())
                 {
-                    if(tarefa.Estado == EstadoTarefa.EmPausa)
+                    if (tarefa.Estado == EstadoTarefa.EmPausa)
                     {
                         tarefasAgendadas.Enqueue(tarefa);
                     }
@@ -63,14 +63,15 @@ namespace ProcessadorTarefas.Servicos
 
         public async Task ProcessarTarefasAsync(int tarefasEmParalelo) //recebe do arquivo config
         {
-            Queue<Tarefa> filaTarefa = PreencherTarefasAgendadas();
+            
+            Queue<Tarefa> filaEmExecucao = PreencherTarefasAgendadas();
 
             var tasksEmExecucao = new List<Task>();
 
             //Quando inicializo o programa, entra aqui
             while (tasksEmExecucao.Count < tarefasEmParalelo)
             {
-                Tarefa tarefa = filaTarefa.Dequeue();
+                Tarefa tarefa = filaEmExecucao.Dequeue();
                 tasksEmExecucao.Add(IniciarTarefaAsync(tarefa));  // 5 Tasks <= Tarefas
             }
 
@@ -78,10 +79,11 @@ namespace ProcessadorTarefas.Servicos
             while (tasksEmExecucao.Count > 0)
             {
                 var tarefaConcluida = await Task.WhenAny(tasksEmExecucao);
+               
                 tasksEmExecucao.Remove(tarefaConcluida);
-                if (filaTarefa.Count > 0)
+                if (filaEmExecucao.Count > 0)
                 {
-                    Tarefa tarefa = filaTarefa.Dequeue();
+                    Tarefa tarefa = filaEmExecucao.Dequeue();
                     tasksEmExecucao.Add(IniciarTarefaAsync(tarefa));
                 }
                 await Task.WhenAll(tasksEmExecucao); //Se não for aqui, colocar logo abaixo da } a seguir
@@ -92,15 +94,18 @@ namespace ProcessadorTarefas.Servicos
         public async Task IniciarTarefaAsync(Tarefa tarefa)
         {
             tarefa.Estado = EstadoTarefa.EmExecucao;
-            var subtarefasPendentes = tarefa.SubtarefasPendentes;
 
-            foreach (var subtarefa in subtarefasPendentes)
+            var subtarefasPendentes = new List<Subtarefa>(tarefa.SubtarefasPendentes);
+            var subtarefasExecutadas = new List<Subtarefa>();
+
+            foreach (var subtarefa in tarefa.SubtarefasPendentes)
             {
                 await IniciarSubtarefasAsync(subtarefa);
-                tarefa.SubtarefasExecutadas.Add(subtarefa);
-                tarefa.SubtarefasPendentes.Remove(subtarefa);
+                //chamar método pra atualizar
+                subtarefasPendentes.Remove(subtarefa);
+                subtarefasExecutadas.Add(subtarefa);
             }
-
+            AtualizaSubtarefas(tarefa, subtarefasPendentes, subtarefasExecutadas);
             tarefa.Estado = EstadoTarefa.Concluida;
             tarefa.EncerradaEm = DateTime.Now;
         }
@@ -108,6 +113,12 @@ namespace ProcessadorTarefas.Servicos
         public async Task IniciarSubtarefasAsync(Subtarefa subtarefa)
         {
             await Task.Delay(subtarefa.Duracao);
+        }
+
+        public void AtualizaSubtarefas(Tarefa tarefa, ICollection<Subtarefa> subtarefasPendentes, ICollection<Subtarefa> subtarefasExecutadas)
+        {
+            tarefa.SubtarefasPendentes = subtarefasPendentes;
+            tarefa.SubtarefasExecutadas = subtarefasExecutadas;
         }
 
     }
