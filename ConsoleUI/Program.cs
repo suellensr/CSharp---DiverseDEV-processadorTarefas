@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ProcessadorTarefas.Entidades;
 using ProcessadorTarefas.Repositorios;
 using ProcessadorTarefas.Servicos;
+using System.Threading.Tasks;
 
 namespace ConsoleUI
 {
@@ -23,14 +24,60 @@ namespace ConsoleUI
 
             processadorTarefas.Iniciar();
 
+            while (true)
+            {
+                if (Console.KeyAvailable)
+                {
+                    if (int.TryParse(Console.ReadLine(), out int opcao))
 
+                        switch (opcao)
+                        {
+                            case 1:
+                                await gerenciadorTarefas.Criar();
+                                break;
+                            case 2:
+                                Console.WriteLine("Digite o id da tarefa que deseja cancelar:");
+                                if (int.TryParse(Console.ReadLine(), out int idTarefa))
+                                {
+                                    await gerenciadorTarefas.Cancelar(idTarefa);
+                                }
+                                break;
 
+                            case 3:
+                                visualizacaoTarefas = VisualizacaoTarefas.TarefasAtivas;
+                                break;
 
+                            case 4:
+                                visualizacaoTarefas = VisualizacaoTarefas.TarefasInativas;
+                                break;
 
+                                //case 5:
+                                //    await processadorTarefas.Encerrar();
+                                //case 6:
+                                //    await processadorTarefas.Iniciar();
+                                //default:
+                        }
+                }
 
+                Console.Clear();
+                MostrarMenuInicial();
+
+                if (visualizacaoTarefas.Equals(VisualizacaoTarefas.TarefasAtivas))
+                {
+                    var listaAtivas = await gerenciadorTarefas.ListarAtivas();
+                    ImprimirListas(listaAtivas);
+                }
+                else if (visualizacaoTarefas.Equals(VisualizacaoTarefas.TarefasInativas))
+                {
+                    var listaInativa = await gerenciadorTarefas.ListarInativas();
+                    ImprimirListas(listaInativa);
+                }
+
+                await Task.Delay(1000);
+            }
         }
 
-        public static IServiceProvider ServicesConfiguration()
+        static IServiceProvider ServicesConfiguration()
         {
             string basePath = Path.GetFullPath("appsettings.json").Replace("\\bin\\Debug\\net8.0", "");
 
@@ -55,6 +102,29 @@ namespace ConsoleUI
                 .BuildServiceProvider();
 
             return services;
+        }
+
+        static void MostrarMenuInicial()
+        {
+            Console.WriteLine("--------------------------------------------");
+            Console.WriteLine("+            GERENCIAR TAREFAS             +");
+            Console.WriteLine("--------------------------------------------");
+            Console.WriteLine("+           Escolha uma opção:             +");
+            Console.WriteLine("+      1 - Adicionar tarefa                +");
+            Console.WriteLine("+      2 - Cancelar tarefa                 +");
+            Console.WriteLine("+      3 - Listar tarafas ativas           +");
+            Console.WriteLine("+      4 - Listar tarefas inativas         +");
+            Console.WriteLine("+      5 - Sair                            +");
+            Console.WriteLine("--------------------------------------------");
+        }
+
+        static void ImprimirListas(IEnumerable<Tarefa> tarefas)
+        {
+            foreach (var tarefa in tarefas)
+            {
+                Console.WriteLine($"Id: {tarefa.Id} | Estado: {tarefa.Estado} | Iniciada em:{tarefa.IniciadaEm} |" +
+                    $" Encerrada em: {tarefa.EncerradaEm} | Subtarefas: {tarefa.SubtarefasPendentes.Count + tarefa.SubtarefasExecutadas.Count}");
+            }
         }
     }
 }
